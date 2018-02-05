@@ -4,6 +4,7 @@ module App.Options where
 import Control.Lens
 import Control.Monad.Logger  (LogLevel (..))
 import Data.Semigroup        ((<>))
+import Data.Text             (Text)
 import Network.AWS.Data.Text (FromText (..), fromText)
 import Network.AWS.S3.Types  (Region (..))
 import Network.Socket        (HostName)
@@ -11,23 +12,10 @@ import Network.StatsD        (SampleRate (..))
 import Options.Applicative
 import Text.Read             (readEither)
 
-import Kafka.Consumer.Types
-import Kafka.Types
-
-import           Data.Text   (Text)
 import qualified Data.Text   as T
 import qualified Network.AWS as AWS
 
 newtype StatsTag = StatsTag (Text, Text) deriving (Show, Eq)
-
-data KafkaConfig = KafkaConfig
-  { _broker                :: BrokerAddress
-  , _schemaRegistryAddress :: String
-  , _pollTimeoutMs         :: Timeout
-  , _queuedMaxMsgKBytes    :: Int
-  , _debugOpts             :: String
-  , _commitPeriodSec       :: Int
-  } deriving (Show)
 
 data StatsConfig = StatsConfig
   { _statsHost       :: HostName
@@ -37,20 +25,13 @@ data StatsConfig = StatsConfig
   } deriving (Show)
 
 data Options = Options
-  { _optLogLevel     :: LogLevel
-  , _optRegion       :: Region
-  , _optInputTopic   :: TopicName
-  , _consumerGroupId :: ConsumerGroupId
-  , _optKafkaConfig  :: KafkaConfig
-  , _optStatsConfig  :: StatsConfig
+  { _optLogLevel    :: LogLevel
+  , _optRegion      :: Region
+  , _optStatsConfig :: StatsConfig
   } deriving (Show)
 
-makeClassy ''KafkaConfig
 makeClassy ''StatsConfig
 makeClassy ''Options
-
-instance HasKafkaConfig Options where
-  kafkaConfig = optKafkaConfig
 
 instance HasStatsConfig Options where
   statsConfig = optStatsConfig
@@ -79,40 +60,6 @@ statsConfigParser = StatsConfig
     <> showDefault <> value 0.01
     <> help "StatsD sample rate"))
 
-kafkaConfigParser :: Parser KafkaConfig
-kafkaConfigParser = KafkaConfig
-  <$> ( BrokerAddress <$> strOption
-    (  long "kafka-broker"
-    <> metavar "ADDRESS:PORT"
-    <> help "Kafka bootstrap broker"
-    ))
-  <*> strOption
-    (  long "kafka-schema-registry"
-    <> metavar "HTTP_URL:PORT"
-    <> help "Schema registry address")
-  <*> (Timeout <$> readOption
-    (  long "kafka-poll-timeout-ms"
-    <> metavar "KAFKA_POLL_TIMEOUT_MS"
-    <> showDefault <> value 1000
-    <> help "Kafka poll timeout (in milliseconds)"))
-  <*> readOption
-    (  long "kafka-queued-max-messages-kbytes"
-    <> metavar "KAFKA_QUEUED_MAX_MESSAGES_KBYTES"
-    <> showDefault <> value 100000
-    <> help "Kafka queued.max.messages.kbytes")
-  <*> strOption
-    (  long "kafka-debug-enable"
-    <> metavar "KAFKA_DEBUG_ENABLE"
-    <> showDefault <> value "broker,protocol"
-    <> help "Kafka debug modules, comma separated names: see debug in CONFIGURATION.md"
-    )
-  <*> readOption
-    (  long "kafka-consumer-commit-period-sec"
-    <> metavar "KAFKA_CONSUMER_COMMIT_PERIOD_SEC"
-    <> showDefault <> value 60
-    <> help "Kafka consumer offsets commit period (in seconds)"
-    )
-
 optParser :: Parser Options
 optParser = Options
   <$> readOptionMsg "Valid values are LevelDebug, LevelInfo, LevelWarn, LevelError"
@@ -126,15 +73,6 @@ optParser = Options
         <> showDefault <> value Oregon
         <> help "The AWS region in which to operate"
         )
-  <*> ( TopicName <$> strOption
-        (  long "input-topic"
-        <> metavar "TOPIC"
-        <> help "Input topic"))
-  <*> ( ConsumerGroupId <$> strOption
-    (  long "kafka-group-id"
-    <> metavar "GROUP_ID"
-    <> help "Kafka consumer group id"))
-  <*> kafkaConfigParser
   <*> statsConfigParser
 
 awsLogLevel :: Options -> AWS.LogLevel

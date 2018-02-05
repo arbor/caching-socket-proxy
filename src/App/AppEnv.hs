@@ -40,9 +40,6 @@ instance HasStatsClient AppEnv where
 instance HasLogger AppEnv where
   logger = appEnv . appLogger
 
-instance HasKafkaConfig AppEnv where
-  kafkaConfig = appOptions . kafkaConfig
-
 instance HasStatsConfig AppEnv where
   statsConfig = appOptions . statsConfig
 

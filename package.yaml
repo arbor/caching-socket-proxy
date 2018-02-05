@@ -29,9 +29,6 @@ dependencies:
 - fast-logger
 - hs-arbor-logger
 - hw-conduit
-- hw-kafka-avro
-- hw-kafka-client
-- hw-kafka-conduit
 - lens
 - monad-control
 - monad-logger
@@ -55,7 +52,6 @@ library:
   - App.AppState
   - App.AWS.Env
   - App.AWS.S3
-  - App.Kafka
   - App.Options
   - App.Orphans
   dependencies:

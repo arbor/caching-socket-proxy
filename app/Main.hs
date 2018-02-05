@@ -2,7 +2,6 @@ module Main where
 
 import App
 import App.AWS.Env
-import App.Kafka
 import Arbor.Logger
 import Control.Exception
 import Control.Lens
@@ -11,14 +10,10 @@ import Data.Conduit
 import Data.Maybe                           (catMaybes)
 import Data.Semigroup                       ((<>))
 import HaskellWorks.Data.Conduit.Combinator
-import Kafka.Avro                           (schemaRegistry)
-import Kafka.Conduit.Sink                   hiding (logLevel)
-import Kafka.Conduit.Source
 import Network.StatsD                       as S
 import System.Environment
 
 import qualified Data.Text as T
-import qualified Service   as Srv
 
 main :: IO ()
 main = do
@@ -41,25 +36,8 @@ main = do
 runApplication :: AppEnv -> IO (Either AppError AppState)
 runApplication envApp =
   runApplicationM envApp $ do
-    opt <- view appOptions
-    kafkaConf <- view kafkaConfig
-
-    logInfo "Creating Kafka Consumer"
-    consumer <- mkConsumer (opt ^. consumerGroupId) (opt ^. optInputTopic)
-    -- producer <- mkProducer -- Use this if you also want a producer.
-
-    logInfo "Instantiating Schema Registry"
-    sr <- schemaRegistry (kafkaConf ^. schemaRegistryAddress)
-
-    logInfo "Running Kafka Consumer"
-    runConduit $
-      kafkaSourceNoClose consumer (kafkaConf ^. pollTimeoutMs)
-      .| throwLeftSatisfyC KafkaErr isFatal            -- throw any fatal error
-      .| skipNonFatalExcept [isPollTimeout]            -- discard any non-fatal except poll timeouts
-      .| rightC (Srv.handleStream sr)                  -- handle messages (see Service.hs)
-      .| everyNSeconds (kafkaConf ^. commitPeriodSec)  -- only commit ever N seconds, so we don't hammer Kafka.
-      .| commitOffsetsSink consumer
-      -- .| flushThenCommitSink consumer producer -- Swap with the above if you want a producer.
+    _ <- view appOptions
+    return ()
 
 
 ---------------------- TO BE MOVED TO A LIBRARY -------------------------------
