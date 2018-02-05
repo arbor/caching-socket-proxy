@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11f8772233f62265912db1f720751736f6ef2a1f004e68986a0412d5dac8137c
+-- hash: 9ab6f0d5819f75603f6200ac8be6e2ac86cc4e9bd56b8e5d12150131fca6217d
 
 name:           caching-socket-proxy
 version:        1.0.0
@@ -62,7 +62,6 @@ library
   exposed-modules:
       App
       App.Application
-      App.AppError
       App.AppEnv
       App.AWS.Env
       App.AWS.S3

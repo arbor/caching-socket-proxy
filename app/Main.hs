@@ -5,13 +5,9 @@ import App.AWS.Env
 import Arbor.Logger
 import Control.Exception
 import Control.Lens
-import Control.Monad                        (void)
-import Data.Conduit
-import Data.Conduit.Network
-import Data.Maybe                           (catMaybes)
-import Data.Semigroup                       ((<>))
-import HaskellWorks.Data.Conduit.Combinator
-import Network.StatsD                       as S
+import Data.Maybe         (catMaybes)
+import Data.Semigroup     ((<>))
+import Network.StatsD     as S
 import System.Environment
 
 import qualified Data.Text as T
@@ -27,31 +23,14 @@ main = do
     withStatsClient progName statsConf $ \stats -> do
       envAws <- mkEnv (opt ^. optRegion) logLvk lgr
       let envApp = AppEnv opt envAws stats (Logger lgr logLvk)
-      res <- runApplication envApp
-      case res of
-        Left err -> pushLogMessage lgr LevelError ("Exiting: " <> show err)
-        Right _  -> pure ()
+      runApplication envApp
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
-
-runApplication :: AppEnv -> IO (Either AppError ())
+runApplication :: AppEnv -> IO ()
 runApplication envApp =
   runApplicationM envApp $ do
     _ <- view appOptions
     return ()
-
----------------------- TO BE MOVED TO A LIBRARY -------------------------------
-throwLeftC :: MonadAppError m => (e -> AppError) -> Conduit (Either e a) m (Either e a)
-throwLeftC f = awaitForever $ \msg ->
-  throwErrorAs f msg
-
-throwLeftSatisfyC :: MonadAppError m => (e -> AppError) -> (e -> Bool) -> Conduit (Either e a) m (Either e a)
-throwLeftSatisfyC f p = awaitForever $ \msg ->
-  case msg of
-    Right a -> yield (Right a)
-    Left e  | p e -> throwErrorAs f (Left e)
-    Left e  -> yield (Left e)
--------------------------------------------------------------------------------
 
 withStatsClient :: AppName -> StatsConfig -> (StatsClient -> IO a) -> IO a
 withStatsClient appName statsConf f = do
