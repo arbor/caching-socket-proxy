@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11f8772233f62265912db1f720751736f6ef2a1f004e68986a0412d5dac8137c
+-- hash: 61e91266a0b519206e41ae9232f67dfb4080fc9f10198e8bd2a8ac2480e1307d
 
 name:           caching-socket-proxy
 version:        1.0.0
@@ -53,6 +53,7 @@ library
     , resourcet
     , split
     , stm
+    , stm-containers
     , text
     , transformers
     , transformers-base
@@ -106,6 +107,7 @@ executable caching-socket-proxy
     , random
     , resourcet
     , stm
+    , stm-containers
     , text
     , transformers
     , transformers-base
@@ -153,6 +155,7 @@ test-suite tests
     , random
     , resourcet
     , stm
+    , stm-containers
     , text
     , transformers
     , transformers-base

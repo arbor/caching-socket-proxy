@@ -38,6 +38,7 @@ dependencies:
 - random
 - resourcet
 - stm
+- stm-containers
 - text
 - transformers
 - transformers-base

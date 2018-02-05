@@ -14,11 +14,16 @@ import HaskellWorks.Data.Conduit.Combinator
 import Network.StatsD                       as S
 import System.Environment
 
-import qualified Data.Conduit         as C
-import qualified Data.Conduit.List    as C
-import qualified Data.Conduit.Network as N
-import qualified Data.Text            as T
-import qualified Network.Socket       as N
+import qualified Control.Concurrent.STM      as STM
+import qualified Control.Concurrent.STM.TVar as STM
+import qualified Data.ByteString             as BS
+import qualified Data.Conduit                as C
+import qualified Data.Conduit.List           as C
+import qualified Data.Conduit.Network        as N
+import qualified Data.Map                    as M
+import qualified Data.Text                   as T
+import qualified Network.Socket              as N
+import qualified System.IO.Unsafe            as U
 
 main :: IO ()
 main = do
@@ -37,13 +42,20 @@ main = do
         Right _  -> pure ()
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
+gCache :: STM.TVar (M.Map BS.ByteString BS.ByteString)
+gCache = U.unsafePerformIO $ STM.newTVarIO M.empty
+{-# NOINLINE gCache #-}
+
 runApplication :: AppEnv -> IO (Either AppError ())
 runApplication envApp = do
   N.runTCPServer (N.serverSettings 43 "") $ \appData -> do
     key <- runConduit (N.appSource appData .| foldC)
 
-    runConduit (N.appSource appData .| foldC)
-    runConduit (C.sourceList [key] .| N.appSink appData)
+    mValue <- STM.atomically $ STM.readTVar gCache <&> M.lookup key
+
+    case mValue of
+      Just value -> runConduit (C.sourceList [value] .| N.appSink appData)
+      Nothing    -> runConduit (C.sourceList [key] .| N.appSink appData)
 
     return ()
 
