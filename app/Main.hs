@@ -23,6 +23,7 @@ import qualified Data.Conduit.Network        as N
 import qualified Data.Map                    as M
 import qualified Data.Text                   as T
 import qualified Network.Socket              as N
+import qualified Network.Socket.ByteString   as N
 import qualified System.IO.Unsafe            as U
 
 main :: IO ()
@@ -36,7 +37,7 @@ main = do
     withStatsClient progName statsConf $ \stats -> do
       envAws <- mkEnv (opt ^. optRegion) logLvk lgr
       let envApp = AppEnv opt envAws stats (Logger lgr logLvk)
-      res <- runApplication envApp
+      res <- runApplication opt envApp
       case res of
         Left err -> pushLogMessage lgr LevelError ("Exiting: " <> show err)
         Right _  -> pure ()
@@ -46,16 +47,26 @@ gCache :: STM.TVar (M.Map BS.ByteString BS.ByteString)
 gCache = U.unsafePerformIO $ STM.newTVarIO M.empty
 {-# NOINLINE gCache #-}
 
-runApplication :: AppEnv -> IO (Either AppError ())
-runApplication envApp = do
-  N.runTCPServer (N.serverSettings 43 "") $ \appData -> do
+runApplication :: Options -> AppEnv -> IO (Either AppError ())
+runApplication opt envApp = do
+  N.runTCPServer (N.serverSettings (opt ^. sourcePort) "") $ \appData -> do
     key <- runConduit (N.appSource appData .| foldC)
 
     mValue <- STM.atomically $ STM.readTVar gCache <&> M.lookup key
 
     case mValue of
       Just value -> runConduit (C.sourceList [value] .| N.appSink appData)
-      Nothing    -> runConduit (C.sourceList [key] .| N.appSink appData)
+      Nothing    -> do
+        addrInfo <- N.getAddrInfo Nothing (Just (opt ^. targetHost)) (Just $ show (opt ^. targetPort))
+        let serverAddr = head addrInfo
+        sock <- N.socket (N.addrFamily serverAddr) N.Stream N.defaultProtocol
+
+        runConduit (C.sourceList [key] .| N.sinkSocket sock)
+        value <- runConduit (N.sourceSocket sock .| foldC)
+
+        STM.atomically $ STM.modifyTVar gCache (M.update (const (Just key)) value)
+
+        runConduit (C.sourceList [value] .| N.appSink appData)
 
     return ()
 
