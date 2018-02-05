@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 61e91266a0b519206e41ae9232f67dfb4080fc9f10198e8bd2a8ac2480e1307d
+-- hash: 19cf0438c1b30f3405346d47b233fea4c9df20ae2cd4890b3464a409051d89cc
 
 name:           caching-socket-proxy
 version:        1.0.0
@@ -28,7 +28,6 @@ library
       amazonka
     , amazonka-core
     , amazonka-s3
-    , avro
     , base >=4.7 && <5
     , bifunctors
     , bytestring
@@ -53,11 +52,9 @@ library
     , resourcet
     , split
     , stm
-    , stm-containers
     , text
     , transformers
     , transformers-base
-    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   exposed-modules:
@@ -83,7 +80,6 @@ executable caching-socket-proxy
       amazonka
     , amazonka-core
     , amazonka-s3
-    , avro
     , base >=4.7 && <5
     , bifunctors
     , bytestring
@@ -107,11 +103,9 @@ executable caching-socket-proxy
     , random
     , resourcet
     , stm
-    , stm-containers
     , text
     , transformers
     , transformers-base
-    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   other-modules:
@@ -130,7 +124,6 @@ test-suite tests
       amazonka
     , amazonka-core
     , amazonka-s3
-    , avro
     , base >=4.7 && <5
     , bifunctors
     , bytestring
@@ -155,11 +148,9 @@ test-suite tests
     , random
     , resourcet
     , stm
-    , stm-containers
     , text
     , transformers
     , transformers-base
-    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   other-modules:

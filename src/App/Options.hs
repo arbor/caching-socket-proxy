@@ -25,12 +25,14 @@ data StatsConfig = StatsConfig
   } deriving (Show)
 
 data Options = Options
-  { _optLogLevel    :: LogLevel
-  , _optRegion      :: Region
-  , _sourcePort     :: Int
-  , _targetHost     :: HostName
-  , _targetPort     :: Int
-  , _optStatsConfig :: StatsConfig
+  { _optLogLevel            :: LogLevel
+  , _optRegion              :: Region
+  , _optSourcePort          :: Int
+  , _optTargetHost          :: HostName
+  , _optTargetPort          :: Int
+  , _optCacheTtlSeconds     :: Int
+  , _optQueryTimeoutSeconds :: Int
+  , _optStatsConfig         :: StatsConfig
   } deriving (Show)
 
 makeClassy ''StatsConfig
@@ -89,8 +91,17 @@ optParser = Options
   <*> readOption
       (  long "remote-port"
       <> metavar "PORT"
-      <> help "Remote port"
-      <> hidden)
+      <> help "Remote port")
+  <*> readOption
+      (  long "cache-ttl"
+      <> metavar "SECONDS"
+      <> showDefault <> value 600
+      <> help "Seconds")
+      <*> readOption
+      (  long "query-timeout"
+      <> metavar "SECONDS"
+      <> showDefault <> value 5
+      <> help "Seconds")
   <*> statsConfigParser
 
 awsLogLevel :: Options -> AWS.LogLevel

@@ -17,7 +17,6 @@ dependencies:
 - amazonka
 - amazonka-core
 - amazonka-s3
-- avro
 - bifunctors
 - bytestring
 - conduit
@@ -38,11 +37,9 @@ dependencies:
 - random
 - resourcet
 - stm
-- stm-containers
 - text
 - transformers
 - transformers-base
-- unliftio-core
 library:
   source-dirs: src
   default-extensions:
