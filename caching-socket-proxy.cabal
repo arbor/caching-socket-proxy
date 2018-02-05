@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b2207d59544d8b5a2fb600c071b914b370b825b586e5e774ff4ed374193a8ce
+-- hash: 11f8772233f62265912db1f720751736f6ef2a1f004e68986a0412d5dac8137c
 
 name:           caching-socket-proxy
 version:        1.0.0
@@ -52,9 +52,11 @@ library
     , random
     , resourcet
     , split
+    , stm
     , text
     , transformers
     , transformers-base
+    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   exposed-modules:
@@ -62,7 +64,6 @@ library
       App.Application
       App.AppError
       App.AppEnv
-      App.AppState
       App.AWS.Env
       App.AWS.S3
       App.Options
@@ -88,6 +89,7 @@ executable caching-socket-proxy
     , caching-socket-proxy
     , conduit
     , conduit-combinators
+    , conduit-extra
     , containers
     , datadog
     , directory
@@ -103,9 +105,11 @@ executable caching-socket-proxy
     , optparse-applicative
     , random
     , resourcet
+    , stm
     , text
     , transformers
     , transformers-base
+    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   other-modules:
@@ -131,6 +135,7 @@ test-suite tests
     , caching-socket-proxy
     , conduit
     , conduit-combinators
+    , conduit-extra
     , containers
     , datadog
     , directory
@@ -147,9 +152,11 @@ test-suite tests
     , network
     , random
     , resourcet
+    , stm
     , text
     , transformers
     , transformers-base
+    , unliftio-core
   if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
   other-modules:

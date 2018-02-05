@@ -7,6 +7,7 @@ import Control.Exception
 import Control.Lens
 import Control.Monad                        (void)
 import Data.Conduit
+import Data.Conduit.Network
 import Data.Maybe                           (catMaybes)
 import Data.Semigroup                       ((<>))
 import HaskellWorks.Data.Conduit.Combinator
@@ -33,12 +34,11 @@ main = do
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
 
-runApplication :: AppEnv -> IO (Either AppError AppState)
+runApplication :: AppEnv -> IO (Either AppError ())
 runApplication envApp =
   runApplicationM envApp $ do
     _ <- view appOptions
     return ()
-
 
 ---------------------- TO BE MOVED TO A LIBRARY -------------------------------
 throwLeftC :: MonadAppError m => (e -> AppError) -> Conduit (Either e a) m (Either e a)

@@ -12,7 +12,6 @@ import Control.Monad.Catch
 import Control.Monad.Except
 import Control.Monad.Logger         (LoggingT, MonadLogger)
 import Control.Monad.Reader
-import Control.Monad.State.Strict   (MonadState (..), StateT, execStateT)
 import Control.Monad.Trans.Resource
 import Data.Text                    (Text)
 import Network.AWS                  as AWS hiding (LogLevel)
@@ -20,13 +19,12 @@ import Network.StatsD               as S
 
 import App.AppEnv
 import App.AppError
-import App.AppState
 import App.Orphans  ()
 
 type AppName = Text
 
 newtype Application a = Application
-  { unApp :: ReaderT AppEnv (StateT AppState (ExceptT AppError (LoggingT AWS))) a
+  { unApp :: ReaderT AppEnv (ExceptT AppError (LoggingT AWS)) a
   } deriving ( Functor
              , Applicative
              , Monad
@@ -35,7 +33,6 @@ newtype Application a = Application
              , MonadThrow
              , MonadCatch
              , MonadReader AppEnv
-             , MonadState AppState
              , MonadError AppError
              , MonadAWS
              , MonadLogger
@@ -46,7 +43,6 @@ newtype Application a = Application
 class MonadError AppError m => MonadAppError m where
 
 class ( MonadReader AppEnv m
-      , MonadState AppState m
       , MonadLogger m
       , MonadAWS m
       , MonadStats m
@@ -65,14 +61,12 @@ instance MonadStats Application where
 
 runApplicationM :: AppEnv
                 -> Application ()
-                -> IO (Either AppError AppState)
+                -> IO (Either AppError ())
 runApplicationM envApp f =
   runResourceT
     . runAWS (envApp ^. appAwsEnv)
     . runTimedLogT (envApp ^. appLogger . lgLogLevel) (envApp ^. appLogger . lgLogger)
     . runExceptT
-    . flip execStateT appStateEmpty
     $ do
         logInfo $ show (envApp ^. appOptions)
         runReaderT (unApp f) envApp
-
