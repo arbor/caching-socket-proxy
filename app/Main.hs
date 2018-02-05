@@ -7,14 +7,15 @@ import Control.Exception
 import Control.Lens
 import Control.Monad                        (void)
 import Data.Conduit
-import Data.Conduit.Network
 import Data.Maybe                           (catMaybes)
 import Data.Semigroup                       ((<>))
 import HaskellWorks.Data.Conduit.Combinator
 import Network.StatsD                       as S
 import System.Environment
 
-import qualified Data.Text as T
+import qualified Data.Conduit.Network as N
+import qualified Data.Text            as T
+import qualified Network.Socket       as N
 
 main :: IO ()
 main = do
@@ -35,7 +36,15 @@ main = do
 
 
 runApplication :: AppEnv -> IO (Either AppError ())
-runApplication envApp =
+runApplication envApp = do
+  N.runTCPServer (N.serverSettings 43 "") $ \appData -> do
+    let sa1 = N.appSockAddr appData
+    let msa2 = N.appLocalAddr appData
+
+    runConduit $ N.appSource appData .| N.appSink appData
+
+    return ()
+
   runApplicationM envApp $ do
     _ <- view appOptions
     return ()
