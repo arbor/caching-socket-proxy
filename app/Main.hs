@@ -3,6 +3,7 @@ module Main where
 import App
 import App.AWS.Env
 import Arbor.Logger
+import Conduit
 import Control.Exception
 import Control.Lens
 import Control.Monad                        (void)
@@ -13,6 +14,8 @@ import HaskellWorks.Data.Conduit.Combinator
 import Network.StatsD                       as S
 import System.Environment
 
+import qualified Data.Conduit         as C
+import qualified Data.Conduit.List    as C
 import qualified Data.Conduit.Network as N
 import qualified Data.Text            as T
 import qualified Network.Socket       as N
@@ -34,14 +37,13 @@ main = do
         Right _  -> pure ()
     pushLogMessage lgr LevelError ("Premature exit, must not happen." :: String)
 
-
 runApplication :: AppEnv -> IO (Either AppError ())
 runApplication envApp = do
   N.runTCPServer (N.serverSettings 43 "") $ \appData -> do
-    let sa1 = N.appSockAddr appData
-    let msa2 = N.appLocalAddr appData
+    key <- runConduit (N.appSource appData .| foldC)
 
-    runConduit $ N.appSource appData .| N.appSink appData
+    runConduit (N.appSource appData .| foldC)
+    runConduit (C.sourceList [key] .| N.appSink appData)
 
     return ()
 
