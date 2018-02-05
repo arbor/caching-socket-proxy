@@ -1,159 +1,169 @@
-name:                caching-socket-proxy
-version:             1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/packetloop/caching-socket-proxy#readme
-license:             MIT
-license-file:        LICENSE
-author:              Arbor Networks
-maintainer:          mayhem@arbor.net
-copyright:           Arbor Networks
-category:            Services
-build-type:          Simple
-cabal-version:       >=1.10
-extra-source-files:  README.md
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c9501d30b6b01dae0aca0a25da1e46ed2f3949f6e1b97d324e0490b84874dbad
 
-executable caching-socket-proxy
-  hs-source-dirs:       app
-  main-is:              Main.hs
-  other-modules:        DevApp
-                      , Service
-  default-language:     Haskell2010
-  build-depends:        base >= 4.7 && < 5
-                      , caching-socket-proxy
-                      , amazonka
-                      , amazonka-core
-                      , amazonka-s3
-                      , avro
-                      , bifunctors
-                      , bytestring
-                      , conduit
-                      , conduit-combinators
-                      , containers
-                      , datadog
-                      , directory
-                      , etc
-                      , exceptions
-                      , fast-logger
-                      , hs-arbor-logger
-                      , hw-conduit
-                      , hw-kafka-avro
-                      , hw-kafka-client
-                      , hw-kafka-conduit
-                      , lens
-                      , monad-control
-                      , monad-logger
-                      , mtl
-                      , network
-                      , random
-                      , optparse-applicative
-                      , resourcet
-                      , text
-                      , transformers
-                      , transformers-base
-  ghc-options:        -threaded -rtsopts -O2
-  default-extensions: OverloadedStrings
-                      TupleSections
-                      MultiParamTypeClasses
-                      LambdaCase
-  if os(darwin)
-    cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
+name:           caching-socket-proxy
+version:        1.0.0
+category:       Services
+homepage:       https://github.com/packetloop/caching-socket-proxy#readme
+author:         Arbor Networks
+maintainer:     mayhem@arbor.net
+copyright:      Arbor Networks
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.md
 
 library
-  hs-source-dirs:       src
-  exposed-modules:      App
-                      , App.Application
-                      , App.AppError
-                      , App.AppEnv
-                      , App.AppState
-                      , App.AWS.Env
-                      , App.AWS.S3
-                      , App.Kafka
-                      , App.Options
-                      , App.Orphans
-  default-language:     Haskell2010
-  ghc-options:          -Wall
-  build-depends:        base >= 4.7 && < 5
-                      , amazonka
-                      , amazonka-core
-                      , amazonka-s3
-                      , avro
-                      , bifunctors
-                      , bytestring
-                      , conduit
-                      , conduit-extra
-                      , conduit-combinators
-                      , containers
-                      , datadog
-                      , directory
-                      , exceptions
-                      , fast-logger
-                      , hs-arbor-logger
-                      , http-types
-                      , hw-conduit
-                      , hw-kafka-avro
-                      , hw-kafka-client
-                      , hw-kafka-conduit
-                      , lens
-                      , monad-control
-                      , monad-logger
-                      , mtl
-                      , network
-                      , optparse-applicative
-                      , random
-                      , resourcet
-                      , split
-                      , text
-                      , transformers
-                      , transformers-base
-  default-extensions: OverloadedStrings
-                      TupleSections
-                      MultiParamTypeClasses
-                      LambdaCase
-  if os(darwin)
+  hs-source-dirs:
+      src
+  default-extensions: OverloadedStrings TupleSections MultiParamTypeClasses LambdaCase
+  ghc-options: -Wall
+  build-depends:
+      amazonka
+    , amazonka-core
+    , amazonka-s3
+    , avro
+    , base >=4.7 && <5
+    , bifunctors
+    , bytestring
+    , conduit
+    , conduit-combinators
+    , conduit-extra
+    , containers
+    , datadog
+    , directory
+    , exceptions
+    , fast-logger
+    , hs-arbor-logger
+    , http-types
+    , hw-conduit
+    , hw-kafka-avro
+    , hw-kafka-client
+    , hw-kafka-conduit
+    , lens
+    , monad-control
+    , monad-logger
+    , mtl
+    , network
+    , optparse-applicative
+    , random
+    , resourcet
+    , split
+    , text
+    , transformers
+    , transformers-base
+  if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
+  exposed-modules:
+      App
+      App.Application
+      App.AppError
+      App.AppEnv
+      App.AppState
+      App.AWS.Env
+      App.AWS.S3
+      App.Kafka
+      App.Options
+      App.Orphans
+  other-modules:
+      Paths_caching_socket_proxy
+  default-language: Haskell2010
+
+executable caching-socket-proxy
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  default-extensions: OverloadedStrings TupleSections MultiParamTypeClasses LambdaCase
+  ghc-options: -threaded -rtsopts -O2
+  build-depends:
+      amazonka
+    , amazonka-core
+    , amazonka-s3
+    , avro
+    , base >=4.7 && <5
+    , bifunctors
+    , bytestring
+    , caching-socket-proxy
+    , conduit
+    , conduit-combinators
+    , containers
+    , datadog
+    , directory
+    , exceptions
+    , fast-logger
+    , hs-arbor-logger
+    , hw-conduit
+    , hw-kafka-avro
+    , hw-kafka-client
+    , hw-kafka-conduit
+    , lens
+    , monad-control
+    , monad-logger
+    , mtl
+    , network
+    , optparse-applicative
+    , random
+    , resourcet
+    , text
+    , transformers
+    , transformers-base
+  if os(osx)
+    cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
+  other-modules:
+      DevApp
+      Service
+      Paths_caching_socket_proxy
+  default-language: Haskell2010
 
 test-suite tests
-  type:                 exitcode-stdio-1.0
-  default-language:     Haskell2010
-  hs-source-dirs:       tests
-  other-modules:        App.OptionsSpec
-  main-is:              Spec.hs
-  ghc-options:          -Wall -threaded
-  build-depends:        base >= 4.7 && < 5
-                      , caching-socket-proxy
-                      , hspec
-                      , hedgehog
-                      , amazonka
-                      , amazonka-core
-                      , amazonka-s3
-                      , avro
-                      , bifunctors
-                      , bytestring
-                      , conduit
-                      , conduit-combinators
-                      , containers
-                      , datadog
-                      , directory
-                      , exceptions
-                      , fast-logger
-                      , hs-arbor-logger
-                      , hw-conduit
-                      , hw-kafka-avro
-                      , hw-kafka-client
-                      , hw-kafka-conduit
-                      , lens
-                      , monad-control
-                      , monad-logger
-                      , mtl
-                      , network
-                      , random
-                      , resourcet
-                      , text
-                      , transformers
-                      , transformers-base
-  default-extensions: OverloadedStrings
-                      TupleSections
-                      MultiParamTypeClasses
-  if os(darwin)
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      tests
+  default-extensions: OverloadedStrings TupleSections MultiParamTypeClasses
+  ghc-options: -Wall -threaded
+  build-depends:
+      amazonka
+    , amazonka-core
+    , amazonka-s3
+    , avro
+    , base >=4.7 && <5
+    , bifunctors
+    , bytestring
+    , caching-socket-proxy
+    , conduit
+    , conduit-combinators
+    , containers
+    , datadog
+    , directory
+    , exceptions
+    , fast-logger
+    , hedgehog
+    , hs-arbor-logger
+    , hspec
+    , hw-conduit
+    , hw-kafka-avro
+    , hw-kafka-client
+    , hw-kafka-conduit
+    , lens
+    , monad-control
+    , monad-logger
+    , mtl
+    , network
+    , random
+    , resourcet
+    , text
+    , transformers
+    , transformers-base
+  if os(osx)
     cpp-options: -D__attribute__(A)= -D_Nullable= -D_Nonnull=
+  other-modules:
+      App.OptionsSpec
+      Paths_caching_socket_proxy
+  default-language: Haskell2010
