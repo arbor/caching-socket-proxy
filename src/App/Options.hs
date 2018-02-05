@@ -27,6 +27,9 @@ data StatsConfig = StatsConfig
 data Options = Options
   { _optLogLevel    :: LogLevel
   , _optRegion      :: Region
+  , _sourcePort     :: Int
+  , _targetHost     :: HostName
+  , _targetPort     :: Int
   , _optStatsConfig :: StatsConfig
   } deriving (Show)
 
@@ -39,40 +42,55 @@ instance HasStatsConfig Options where
 statsConfigParser :: Parser StatsConfig
 statsConfigParser = StatsConfig
   <$> strOption
-    (  long "statsd-host"
-    <> metavar "HOST_NAME"
-    <> showDefault <> value "127.0.0.1"
-    <> help "StatsD host name or IP address")
+      (  long "statsd-host"
+      <> metavar "HOST_NAME"
+      <> showDefault <> value "127.0.0.1"
+      <> help "StatsD host name or IP address")
   <*> readOption
-    (  long "statsd-port"
-    <> metavar "PORT"
-    <> showDefault <> value 8125
-    <> help "StatsD port"
-    <> hidden)
+      (  long "statsd-port"
+      <> metavar "PORT"
+      <> showDefault <> value 8125
+      <> help "StatsD port"
+      <> hidden)
   <*> ( string2Tags <$> strOption
-    (  long "statsd-tags"
-    <> metavar "TAGS"
-    <> showDefault <> value []
-    <> help "StatsD tags"))
+        (  long "statsd-tags"
+        <> metavar "TAGS"
+        <> showDefault <> value []
+        <> help "StatsD tags"))
   <*> ( SampleRate <$> readOption
-    (  long "statsd-sample-rate"
-    <> metavar "SAMPLE_RATE"
-    <> showDefault <> value 0.01
-    <> help "StatsD sample rate"))
+        (  long "statsd-sample-rate"
+        <> metavar "SAMPLE_RATE"
+        <> showDefault <> value 0.01
+        <> help "StatsD sample rate"))
 
 optParser :: Parser Options
 optParser = Options
   <$> readOptionMsg "Valid values are LevelDebug, LevelInfo, LevelWarn, LevelError"
-        (  long "log-level"
-        <> metavar "LOG_LEVEL"
-        <> showDefault <> value LevelInfo
-        <> help "Log level.")
+      (  long "log-level"
+      <> metavar "LOG_LEVEL"
+      <> showDefault <> value LevelInfo
+      <> help "Log level")
   <*> readOrFromTextOption
-        (  long "region"
-        <> metavar "AWS_REGION"
-        <> showDefault <> value Oregon
-        <> help "The AWS region in which to operate"
-        )
+      (  long "region"
+      <> metavar "AWS_REGION"
+      <> showDefault <> value Oregon
+      <> help "The AWS region in which to operate"
+      )
+  <*> readOption
+      (  long "listening-port"
+      <> metavar "PORT"
+      <> help "Listening port"
+      <> hidden)
+  <*> strOption
+      (  long "remote-host"
+      <> metavar "HOST_NAME"
+      <> showDefault <> value "127.0.0.1"
+      <> help "Remote hostname")
+  <*> readOption
+      (  long "remote-port"
+      <> metavar "PORT"
+      <> help "Remote port"
+      <> hidden)
   <*> statsConfigParser
 
 awsLogLevel :: Options -> AWS.LogLevel
