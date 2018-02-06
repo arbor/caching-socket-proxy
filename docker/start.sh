@@ -12,14 +12,11 @@ export STATSD_HOST=${STATSD_HOST:-$GATEWAY_IP}
 set -x
 caching-socket-proxy \
   ${AWS_REGION+                       --region                            "${AWS_REGION}"                       } \
-  ${KAFKA_BROKER+                     --kafka-broker                      "${KAFKA_BROKER}"                     } \
-  ${KAFKA_GROUP_ID+                   --kafka-group-id                    "${KAFKA_GROUP_ID}"                   } \
-  ${KAFKA_SCHEMA_REGISTRY+            --kafka-schema-registry             "${KAFKA_SCHEMA_REGISTRY}"            } \
-  ${KAFKA_POLL_TIMEOUT_MS+            --kafka-poll-timeout-ms             "${KAFKA_POLL_TIMEOUT_MS}"            } \
-  ${KAFKA_QUEUED_MAX_MESSAGES_KBYTES+ --kafka-queued-max-messages-kbytes  "${KAFKA_QUEUED_MAX_MESSAGES_KBYTES}" } \
-  ${KAFKA_DEBUG_ENABLE+               --kafka-debug-enable                "${KAFKA_DEBUG_ENABLE}"               } \
-  ${KAFKA_CONSUMER_COMMIT_PERIOD_SEC+ --kafka-consumer-commit-period-sec  "${KAFKA_CONSUMER_COMMIT_PERIOD_SEC}" } \
-  ${INPUT_TOPIC_IN+                   --input-topic                       "${INPUT_TOPIC_IN}"                   } \
+  ${LISTENING_PORT+                   --listening-port                    "${LISTENING_PORT}"                   } \
+  ${REMOTE_HOST+                      --remote-host                       "${REMOTE_HOST}"                      } \
+  ${REMOTE_PORT+                      --remote-port                       "${REMOTE_PORT}"                      } \
+  ${CACHE_TTL+                        --cache-ttl                         "${CACHE_TTL}"                        } \
+  ${QUERY_TIMEOUT+                    --query-timeout                     "${QUERY_TIMEOUT}"                    } \
   ${STATSD_HOST+                      --statsd-host                       "${STATSD_HOST}"                      } \
   ${STATSD_SAMPLE_RATE+               --statsd-sample-rate                "${STATSD_SAMPLE_RATE}"               } \
   ${STATSD_TAGS+                      --statsd-tags                       "${STATSD_TAGS}"                      } \
