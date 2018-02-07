@@ -100,7 +100,7 @@ runQuery host port key maxDelay = do
 runApplication :: Options -> AppEnv -> IO (Either AppError ())
 runApplication opt envApp = do
   forkIO (collectCache (opt ^. optCacheTtlSeconds * 1000 * 1000))
-  N.runTCPServer (N.serverSettings (opt ^. optSourcePort) "") $ \appData ->
+  N.runTCPServer (N.serverSettings (opt ^. optSourcePort) "*") $ \appData ->
     N.withSocketsDo $ do
       key     <- runConduit (N.appSource appData .| foldC)
       mValue  <- runQuery (opt ^. optTargetHost) (opt ^. optTargetPort) key 1000000
