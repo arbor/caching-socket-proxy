@@ -81,7 +81,7 @@ runQuery host port key maxDelay = do
         r <- timeout maxDelay $ do
           N.connect sock (N.addrAddress serverAddr)
 
-          runConduit (C.sourceList [key] .| N.sinkSocket sock)
+          runConduit (C.sourceList [key, "\n"] .| N.sinkSocket sock)
           value <- runConduit (N.sourceSocket sock .| foldC)
           putStrLn $ "Remote: " <> show key <> " -> " <> show value
           putMVar doneVar ()
