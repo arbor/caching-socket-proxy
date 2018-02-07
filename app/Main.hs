@@ -23,7 +23,9 @@ import System.Timeout
 import qualified Control.Concurrent.STM      as STM
 import qualified Control.Concurrent.STM.TVar as STM
 import qualified Data.ByteString             as BS
+import qualified Data.ByteString.Lazy        as LBS
 import qualified Data.Conduit                as C
+import qualified Data.Conduit.Binary         as CB
 import qualified Data.Conduit.List           as C
 import qualified Data.Conduit.Network        as N
 import qualified Data.Map                    as M
@@ -75,7 +77,7 @@ runQuery host port key maxDelay = do
       doneVar <- newEmptyMVar
       addrInfo <- N.getAddrInfo Nothing (Just host) (Just $ show port)
       let serverAddr = head addrInfo
-      result <- bracket (N.socket (N.addrFamily serverAddr) N.Stream N.defaultProtocol) N.close $ \sock -> do
+      _ <- bracket (N.socket (N.addrFamily serverAddr) N.Stream N.defaultProtocol) N.close $ \sock -> do
         r <- timeout maxDelay $ do
           N.connect sock (N.addrAddress serverAddr)
 
@@ -87,7 +89,7 @@ runQuery host port key maxDelay = do
           STM.atomically $ STM.modifyTVar gCache (M.insert key value)
 
           return value
-        forkIO $ do
+        _ <- forkIO $ do
           threadDelay maxDelay
           putMVar doneVar ()
           return ()
@@ -102,13 +104,20 @@ runApplication opt envApp = do
   forkIO (collectCache (opt ^. optCacheTtlSeconds * 1000 * 1000))
   N.runTCPServer (N.serverSettings (opt ^. optSourcePort) "*") $ \appData ->
     N.withSocketsDo $ do
-      key     <- runConduit (N.appSource appData .| foldC)
-      mValue  <- runQuery (opt ^. optTargetHost) (opt ^. optTargetPort) key 1000000
+      mKey     <- runConduit (N.appSource appData .| CB.lines .| C.head)
+      case mKey of
+        Just key -> do
+          mValue  <- runQuery (opt ^. optTargetHost) (opt ^. optTargetPort) key 1000000
 
-      case mValue of
-        Right value -> runConduit (C.sourceList [value] .| N.appSink appData)
-        Left error -> do
-          putStrLn $ "Error: " <> show error
+          putStrLn $ ">>> " <> show key
+
+          case mValue of
+            Right value -> runConduit (C.sourceList [value] .| N.appSink appData)
+            Left error -> do
+              putStrLn $ "Error: " <> show error
+              runConduit (C.sourceList [] .| N.appSink appData)
+        Nothing -> do
+          putStrLn "Empty request"
           runConduit (C.sourceList [] .| N.appSink appData)
 
   runApplicationM envApp $ do
