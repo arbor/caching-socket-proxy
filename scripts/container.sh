@@ -12,7 +12,7 @@ GIT_HASH=$(git rev-parse --short HEAD)
 GIT_SHA1=${CIRCLE_SHA1:-$(git rev-parse HEAD)}
 GIT_UNCLEAN=true && [ "$(git status -s)" = "" ] && GIT_UNCLEAN=false
 
-FORK_BUILD=true && [ "${BUILD_PROJECT_USER:-}" = "packetloop" ] && [ "${BRANCH_NAME:-}" = "master" ] && FORK_BUILD=false
+FORK_BUILD=true && [ "${BUILD_PROJECT_USER:-}" = "arbor" ] && [ "${BRANCH_NAME:-}" = "master" ] && FORK_BUILD=false
 BUILD_VERSION=$(cat *.cabal | grep -e "^version" | tr -s " " | cut -d' ' -f2)
 BUILD_HASH=$(git rev-list --count HEAD) && ${FORK_BUILD} && BUILD_HASH="${BUILD_HASH}-${GIT_HASH}"
 IMAGE_NAME=${BUILD_BINTRAY}/${BUILD_NAME}_${BUILD_VERSION}
