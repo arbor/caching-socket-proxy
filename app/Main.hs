@@ -43,9 +43,9 @@ main = do
   let logLvk  = opt ^. optLogLevel
   let statsConf = opt ^. optStatsConfig
 
-  putStrLn $ "Starting with options: " <> show opt
-
   withStdOutTimedFastLogger $ \lgr -> do
+    pushLogMessage lgr LevelInfo $ "Starting with options: " <> show opt
+
     withStatsClient progName statsConf $ \stats -> do
       envAws <- mkEnv (opt ^. optRegion) logLvk lgr
       let envApp = AppEnv opt envAws stats (Logger lgr logLvk)
@@ -59,19 +59,19 @@ gCache :: STM.TVar (M.Map BS.ByteString BS.ByteString)
 gCache = U.unsafePerformIO $ STM.newTVarIO M.empty
 {-# NOINLINE gCache #-}
 
-collectCache :: Int -> IO ()
-collectCache interval = do
+collectCache :: TimedFastLogger -> Int -> IO ()
+collectCache lgr interval = do
   threadDelay interval
-  putStrLn "Clear cache"
+  pushLogMessage lgr LevelInfo ("Clear cache" :: String)
   STM.atomically $ STM.writeTVar gCache M.empty
 
-runQuery :: String -> Int -> BS.ByteString -> Int -> IO (Either String BS.ByteString)
-runQuery host port key maxDelay = do
+runQuery :: TimedFastLogger -> String -> Int -> BS.ByteString -> Int -> IO (Either String BS.ByteString)
+runQuery lgr host port key maxDelay = do
   mEntry <- STM.atomically $ STM.readTVar gCache <&> M.lookup key
 
   case mEntry of
     Just value -> do
-      putStrLn $ "Cached: " <> show key <> " -> " <> show value
+      pushLogMessage lgr LevelInfo $ "Cached: " <> show key <> " -> " <> show value
       return (Right value)
     Nothing    -> do
       doneVar <- newEmptyMVar
@@ -83,7 +83,7 @@ runQuery host port key maxDelay = do
 
           runConduit (C.sourceList [key, "\n"] .| N.sinkSocket sock)
           value <- runConduit (N.sourceSocket sock .| foldC)
-          putStrLn $ "Remote: " <> show key <> " -> " <> show value
+          pushLogMessage lgr LevelInfo $ "Remote: " <> show key <> " -> " <> show value
           putMVar doneVar ()
 
           STM.atomically $ STM.modifyTVar gCache (M.insert key value)
@@ -101,20 +101,19 @@ runQuery host port key maxDelay = do
 
 runApplication :: Options -> AppEnv -> IO (Either AppError ())
 runApplication opt envApp = do
-  forkIO (collectCache (opt ^. optCacheTtlSeconds * 1000 * 1000))
+  let lgr = envApp ^. lgLogger
+  forkIO (collectCache lgr (opt ^. optCacheTtlSeconds * 1000 * 1000))
   N.runTCPServer (N.serverSettings (opt ^. optSourcePort) "*") $ \appData ->
     N.withSocketsDo $ do
       mKey     <- runConduit (N.appSource appData .| CB.lines .| C.head)
       case mKey of
         Just key -> do
-          mValue  <- runQuery (opt ^. optTargetHost) (opt ^. optTargetPort) key 1000000
-
-          putStrLn $ ">>> " <> show key
+          mValue  <- runQuery lgr (opt ^. optTargetHost) (opt ^. optTargetPort) key 1000000
 
           case mValue of
             Right value -> runConduit (C.sourceList [value] .| N.appSink appData)
             Left error -> do
-              putStrLn $ "Error: " <> show error
+              pushLogMessage lgr LevelInfo $ "Error: " <> show error
               runConduit (C.sourceList [] .| N.appSink appData)
         Nothing -> do
           putStrLn "Empty request"
