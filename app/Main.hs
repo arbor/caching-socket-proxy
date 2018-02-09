@@ -32,6 +32,7 @@ import qualified Data.Map                    as M
 import qualified Data.Text                   as T
 import qualified Network.Socket              as N
 import qualified Network.Socket.ByteString   as N
+import qualified System.IO                   as SIO
 import qualified System.IO.Unsafe            as U
 
 {-# ANN module ("HLint: ignore Redundant do"  :: String) #-}
@@ -80,6 +81,10 @@ runQuery lgr host port key maxDelay = do
       _ <- bracket (N.socket (N.addrFamily serverAddr) N.Stream N.defaultProtocol) N.close $ \sock -> do
         r <- timeout maxDelay $ do
           N.connect sock (N.addrAddress serverAddr)
+
+          N.setSocketOption sock N.NoDelay 1
+          hdl <- N.socketToHandle sock SIO.ReadWriteMode
+          SIO.hSetBuffering hdl SIO.NoBuffering
 
           runConduit (C.sourceList [key, "\n"] .| N.sinkSocket sock)
           value <- runConduit (N.sourceSocket sock .| foldC)
